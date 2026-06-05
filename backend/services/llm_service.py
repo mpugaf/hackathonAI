@@ -23,7 +23,35 @@ Responde siempre en espanol e incluye estas secciones:
 
 2. DESCRIPCION DETALLADA
 3. COMPONENTES FUNCIONALES
-4. DIAGRAMA DE FLUJO en formato Mermaid
+4. DIAGRAMA DE FLUJO
+
+   Genera un bloque JSON con esta estructura EXACTA (sin texto adicional
+   antes ni despues del bloque):
+
+   ```json
+   {
+     "titulo": "Titulo descriptivo del flujo",
+     "nodes": [
+       {"id": "start", "label": "Inicio",        "type": "start"},
+       {"id": "n1",    "label": "Descripcion",   "type": "process"},
+       {"id": "n2",    "label": "Condicion?",    "type": "decision"},
+       {"id": "end",   "label": "Fin",           "type": "end"}
+     ],
+     "edges": [
+       {"from": "start", "to": "n1"},
+       {"from": "n1",    "to": "n2"},
+       {"from": "n2",    "to": "end", "label": "Si"},
+       {"from": "n2",    "to": "n1",  "label": "No"}
+     ]
+   }
+   ```
+
+   Reglas:
+   - Tipos de nodo: "start" (uno), "end" (uno), "process", "decision".
+   - Incluye entre 7 y 14 nodos representando el flujo principal y alternativo.
+   - Los "id" deben ser unicos y sin espacios (ej: "n1", "validar", "error").
+   - Las etiquetas deben ser concisas (maximo 5 palabras).
+   - SOLO devuelve el bloque ```json ... ```, sin explicacion extra en esta seccion.
 5. REQUISITOS NO FUNCIONALES
 6. ROLES Y PERMISOS
 7. PUNTOS DE INTEGRACION

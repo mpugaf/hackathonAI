@@ -1,8 +1,9 @@
 import { marked } from 'marked';
 import { Copy, Download, FileText, Pencil } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useToast } from '../../context/AuthContext';
 import { exportRequirementDocx } from '../../api/requirements';
+import api from '../../api/axios';
 
 marked.setOptions({ breaks: true, gfm: true });
 
@@ -32,13 +33,30 @@ export default function SpecEditor({ value, onChange, readonly = false, label = 
   const { showToast } = useToast();
   const [viewMode, setViewMode] = useState('rendered'); // 'rendered' | 'raw'
   const [downloading, setDownloading] = useState(false);
+  const [diagramUrl, setDiagramUrl] = useState(null);
+
+  // Fetch diagram SVG whenever the requirementId or spec changes
+  useEffect(() => {
+    if (!requirementId || !value) { setDiagramUrl(null); return; }
+    // Check if spec has a JSON diagram block
+    if (!/```json[\s\S]*?```/i.test(value)) { setDiagramUrl(null); return; }
+    let objectUrl = null;
+    api.get(`/requirements/${requirementId}/diagram.svg`, { responseType: 'blob' })
+      .then((res) => {
+        objectUrl = URL.createObjectURL(res.data);
+        setDiagramUrl(objectUrl);
+      })
+      .catch(() => setDiagramUrl(null));
+    return () => { if (objectUrl) URL.revokeObjectURL(objectUrl); };
+  }, [requirementId, value]);
 
   const html = useMemo(() => {
     if (!value) return '';
-    // Limpia prefijos de sección numerados tipo "1. HISTORIA DE USUARIO" → los convierte en h2
-    const cleaned = value
-      .replace(/^(\d{1,2})\.\s+([A-ZÁÉÍÓÚ\s]{4,})\s*$/gm, (_, n, title) => `## ${n}. ${title.trim()}`)
-      .replace(/^#{1,6}\s*/gm, (m) => m); // ya son headings, ok
+    // Elimina el bloque ```json ... ``` del diagrama (se muestra como imagen separada)
+    const noJson = value.replace(/```json[\s\S]*?```/gi, '');
+    // Convierte encabezados numerados tipo "1. TITULO EN MAYUSCULAS" en h2
+    const cleaned = noJson
+      .replace(/^(\d{1,2})\.\s+([A-ZÁÉÍÓÚ\s]{4,})\s*$/gm, (_, n, t) => `## ${n}. ${t.trim()}`);
     return marked.parse(cleaned);
   }, [value]);
 
@@ -118,10 +136,25 @@ export default function SpecEditor({ value, onChange, readonly = false, label = 
 
       {/* Contenido */}
       {isRendered ? (
-        <div
-          className="spec-prose min-h-[400px] max-h-[72vh] overflow-y-auto rounded-lg border border-silver bg-white px-6 py-5"
-          dangerouslySetInnerHTML={{ __html: html || '<p style="color:#5a6a85;font-style:italic">Sin contenido aún.</p>' }}
-        />
+        <div className="min-h-[400px] max-h-[72vh] overflow-y-auto rounded-lg border border-silver bg-white px-6 py-5">
+          <div
+            className="spec-prose"
+            dangerouslySetInnerHTML={{ __html: html || '<p style="color:#5a6a85;font-style:italic">Sin contenido aún.</p>' }}
+          />
+          {diagramUrl && (
+            <div className="my-6">
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate">Diagrama de Flujo</p>
+              <div className="overflow-x-auto rounded-xl border border-silver bg-[#f8fafc] p-3">
+                <img
+                  src={diagramUrl}
+                  alt="Diagrama de flujo"
+                  className="mx-auto block max-w-full"
+                  style={{ minWidth: 320 }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       ) : (
         <textarea
           className="min-h-[400px] w-full resize-y rounded-lg border border-silver bg-[#0d1b2e] p-4 font-mono text-[0.82rem] leading-6 text-[#c8d8f0] outline-none focus:border-2 focus:border-teal"

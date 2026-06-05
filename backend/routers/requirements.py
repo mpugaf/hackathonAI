@@ -16,6 +16,7 @@ from schemas.requirement import RequirementCreate, RequirementDetail, Requiremen
 from schemas.requirement_version import VersionOut
 from schemas.review import RejectRequest, ReviewHumanRequest, ReviewOut
 from services import llm_service
+from services.diagram_service import extract_flow_json, generate_png_bytes, generate_svg
 from services.audit_service import log_action
 from services.auth_service import get_current_user, require_role
 
@@ -332,6 +333,21 @@ def export_requirement(
     )
 
 
+@router.get("/{requirement_id}/diagram.svg")
+def get_requirement_diagram(
+    requirement_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Response:
+    del current_user
+    requirement = _get_requirement(db, requirement_id)
+    version = _latest_version(db, requirement.id)
+    spec_text = (version.generated_spec or "") if version else ""
+    svg = generate_svg(spec_text)
+    return Response(content=svg, media_type="image/svg+xml",
+                    headers={"Cache-Control": "no-cache"})
+
+
 @router.get("/{requirement_id}/export-docx")
 def export_requirement_docx(
     requirement_id: uuid.UUID,
@@ -414,8 +430,36 @@ def export_requirement_docx(
                 run.font.size = Pt(9)
                 run.font.color.rgb = RGBColor(0x1E, 0x6F, 0xEB)
 
+    # Pre-generate diagram PNG (insert after diagram section heading)
+    diagram_png: bytes | None = None
+    diagram_inserted = False
+    try:
+        diagram_png = generate_png_bytes(spec_text)
+    except Exception:
+        diagram_png = None
+
+    in_json_block = False
+
     for line in lines:
         stripped = line.rstrip()
+
+        # Skip ```json ... ``` block (diagram data — replaced by PNG image)
+        if stripped.startswith("```json"):
+            in_json_block = True
+            continue
+        if in_json_block:
+            if stripped == "```":
+                in_json_block = False
+                # Insert diagram image right here
+                if diagram_png and not diagram_inserted:
+                    from docx.shared import Cm
+                    img_p = doc.add_paragraph()
+                    img_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    import io as _io
+                    run = img_p.add_run()
+                    run.add_picture(_io.BytesIO(diagram_png), width=Cm(14))
+                    diagram_inserted = True
+            continue
 
         # H1
         if _re.match(r'^#\s+', stripped):
