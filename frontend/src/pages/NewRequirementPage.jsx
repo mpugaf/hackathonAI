@@ -1,5 +1,5 @@
 import { ArrowLeft, Lightbulb } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createRequirement, listProjects } from '../api/requirements';
 import { useToast } from '../context/AuthContext';
@@ -11,6 +11,7 @@ export default function NewRequirementPage() {
   const [form, setForm] = useState({ title: '', rawInput: '', projectId: '' });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const submitting = useRef(false);
 
   useEffect(() => {
     listProjects().then((items) => {
@@ -30,15 +31,17 @@ export default function NewRequirementPage() {
 
   const onSubmit = async (event) => {
     event.preventDefault();
+    if (submitting.current) return;
     if (!validate()) return;
+    submitting.current = true;
     setIsLoading(true);
     try {
-      const created = await createRequirement({ project_id: form.projectId, title: form.title, raw_input: form.rawInput });
-      showToast('Requisito creado', 'success');
-      navigate(`/requirements/${created.id}`);
+      await createRequirement({ project_id: form.projectId, title: form.title, raw_input: form.rawInput });
+      showToast('Requisito creado exitosamente', 'success');
+      navigate('/dashboard');
     } catch (err) {
       showToast(err.message, 'error');
-    } finally {
+      submitting.current = false;
       setIsLoading(false);
     }
   };

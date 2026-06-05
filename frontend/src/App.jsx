@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage';
 import HistoryPage from './pages/HistoryPage';
 import LoginPage from './pages/LoginPage';
 import NewRequirementPage from './pages/NewRequirementPage';
+import ProjectsPage from './pages/ProjectsPage';
 import RequirementDetailPage from './pages/RequirementDetailPage';
 import ReviewPage from './pages/ReviewPage';
 
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="/requirements/:id" element={<RequirementDetailPage />} />
         <Route path="/requirements/:id/review" element={<RoleRoute roles={['revisor']}><ReviewPage /></RoleRoute>} />
         <Route path="/requirements/:id/history" element={<HistoryPage />} />
+        <Route path="/projects" element={<RoleRoute roles={['revisor']}><ProjectsPage /></RoleRoute>} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

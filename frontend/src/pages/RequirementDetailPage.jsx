@@ -1,4 +1,4 @@
-import { Bot, Clock, History, Send, Sparkles } from 'lucide-react';
+import { Bot, Clock, History, MessageSquareWarning, Send, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { generateRequirement, reviewAI, updateRequirement } from '../api/requirements';
@@ -103,7 +103,27 @@ export default function RequirementDetailPage() {
           </div>
         </div>
         {requirement.status === 'rechazado' && requirement.latest_human_review && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-danger">{requirement.latest_human_review.feedback}</div>
+          <div className="rounded-lg border border-red-200 bg-red-50 p-5">
+            <div className="mb-3 flex items-center gap-2 text-sm font-bold text-danger">
+              <MessageSquareWarning size={18} />
+              El revisor ha devuelto el requisito con los siguientes alcances:
+            </div>
+            <ul className="space-y-1.5 pl-1">
+              {requirement.latest_human_review.feedback
+                .split(/\n+/)
+                .map((line) => line.trim())
+                .filter(Boolean)
+                .map((line, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-danger">
+                    <span className="mt-0.5 shrink-0 text-red-400">•</span>
+                    <span>{line.replace(/^[-•*]\s*/, '')}</span>
+                  </li>
+                ))}
+            </ul>
+            <p className="mt-3 text-xs text-red-400">
+              Revisa cada punto y vuelve a generar la especificación con "Generar con IA".
+            </p>
+          </div>
         )}
         {requirement.status === 'aprobado' && (
           <div className="flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-[#065f46]"><Clock size={18} />Requisito aprobado y listo para exportar.</div>
@@ -112,7 +132,7 @@ export default function RequirementDetailPage() {
       <section className="space-y-4">
         {requirement.latest_version ? (
           <>
-            <SpecEditor value={editedSpec} onChange={setEditedSpec} readonly={!canEdit} />
+            <SpecEditor value={editedSpec} onChange={setEditedSpec} readonly={!canEdit} requirementId={requirement.id} />
             {requirement.latest_ai_review && <AIFeedbackPanel review={requirement.latest_ai_review} />}
           </>
         ) : (

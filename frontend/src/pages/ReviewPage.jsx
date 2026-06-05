@@ -66,7 +66,7 @@ export default function ReviewPage() {
         <p className="mt-4 text-xs font-semibold uppercase text-slate">Requisito original</p>
         <pre className="mt-2 whitespace-pre-wrap rounded-md bg-[#f8fafc] p-3 font-mono text-xs leading-5 text-slate">{requirement.raw_input}</pre>
       </section>
-      <SpecEditor value={requirement.latest_version?.generated_spec ?? ''} readonly />
+      <SpecEditor value={requirement.latest_version?.generated_spec ?? ''} readonly requirementId={requirement.id} />
       <section className="space-y-4">
         <AIFeedbackPanel review={requirement.latest_ai_review} />
         {requirement.status === 'en_revision' && (

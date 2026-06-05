@@ -1,4 +1,4 @@
-import { BookOpen, ClipboardCheck, LayoutDashboard, LogOut, PlusCircle } from 'lucide-react';
+import { BookOpen, ClipboardCheck, FolderOpen, LayoutDashboard, LogOut, PlusCircle } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -23,6 +23,7 @@ export default function Sidebar() {
         <NavLink to="/dashboard" className={linkClass}><LayoutDashboard size={18} />Dashboard</NavLink>
         {user?.role === 'analista' && <NavLink to="/requirements/new" className={linkClass}><PlusCircle size={18} />Nuevo Requisito</NavLink>}
         {user?.role === 'revisor' && <NavLink to="/dashboard?status=en_revision" className={linkClass}><ClipboardCheck size={18} />Pendientes</NavLink>}
+        {user?.role === 'revisor' && <NavLink to="/projects" className={linkClass}><FolderOpen size={18} />Proyectos</NavLink>}
         <div className="mx-5 my-4 border-t border-white/10" />
         <a className={`${linkBase} border-transparent text-[#7a90b8] hover:bg-white/10 hover:text-white`} href="/docs/MANUAL_USUARIO.html" target="_blank" rel="noreferrer">
           <BookOpen size={18} />Documentacion

@@ -332,6 +332,163 @@ def export_requirement(
     )
 
 
+@router.get("/{requirement_id}/export-docx")
+def export_requirement_docx(
+    requirement_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Response:
+    del current_user
+    import io
+    import re as _re
+    from docx import Document as DocxDocument
+    from docx.shared import Pt, RGBColor
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+    requirement = _get_requirement(db, requirement_id)
+    version = _latest_version(db, requirement.id)
+    if not version:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No existe version generada")
+
+    doc = DocxDocument()
+    for section in doc.sections:
+        from docx.shared import Cm
+        section.top_margin = Cm(2.5)
+        section.bottom_margin = Cm(2.5)
+        section.left_margin = Cm(3)
+        section.right_margin = Cm(3)
+
+    # Título principal
+    title_p = doc.add_paragraph()
+    title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = title_p.add_run(requirement.title)
+    run.bold = True
+    run.font.size = Pt(20)
+    run.font.color.rgb = RGBColor(0x1A, 0x3A, 0x6B)
+
+    # Metadatos
+    meta_p = doc.add_paragraph()
+    meta_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    meta_run = meta_p.add_run(f"Versión {version.version_number}  ·  Modelo: {version.model_used}  ·  {version.created_at.strftime('%d/%m/%Y %H:%M')}")
+    meta_run.font.size = Pt(9)
+    meta_run.font.color.rgb = RGBColor(0x5A, 0x6A, 0x85)
+    meta_run.italic = True
+
+    doc.add_paragraph()
+
+    # Parsear el markdown de la spec y convertir a estilos DOCX
+    spec_text = version.generated_spec or ""
+    lines = spec_text.splitlines()
+
+    def strip_inline(text):
+        """Devuelve lista de (texto, bold, italic) para una línea."""
+        segments = []
+        pattern = _re.compile(r'(\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|__(.+?)__|_(.+?)_|\*(.+?)\*|`(.+?)`)')
+        last = 0
+        for m in pattern.finditer(text):
+            if m.start() > last:
+                segments.append((text[last:m.start()], False, False))
+            raw = m.group(0)
+            inner = m.group(2) or m.group(3) or m.group(4) or m.group(5) or m.group(6) or m.group(7)
+            bold   = '**' in raw or '__' in raw
+            italic = raw.startswith('*') and not raw.startswith('**') or raw.startswith('_') and not raw.startswith('__')
+            mono   = raw.startswith('`')
+            segments.append((inner, bold or ('***' in raw), italic and not bold, mono))
+            last = m.end()
+        if last < len(text):
+            segments.append((text[last:], False, False))
+        return segments
+
+    def add_styled_paragraph(p, line):
+        for seg in strip_inline(line):
+            if len(seg) == 3:
+                txt, bold, italic = seg
+                mono = False
+            else:
+                txt, bold, italic, mono = seg
+            run = p.add_run(txt)
+            run.bold = bold
+            run.italic = italic
+            if mono:
+                run.font.name = 'Courier New'
+                run.font.size = Pt(9)
+                run.font.color.rgb = RGBColor(0x1E, 0x6F, 0xEB)
+
+    for line in lines:
+        stripped = line.rstrip()
+
+        # H1
+        if _re.match(r'^#\s+', stripped):
+            text = _re.sub(r'^#+\s*', '', stripped)
+            p = doc.add_heading(level=1)
+            p.clear()
+            run = p.add_run(text)
+            run.bold = True
+            run.font.color.rgb = RGBColor(0x1A, 0x3A, 0x6B)
+            continue
+
+        # H2
+        if _re.match(r'^#{2}\s+', stripped):
+            text = _re.sub(r'^#+\s*', '', stripped)
+            p = doc.add_heading(level=2)
+            p.clear()
+            run = p.add_run(text)
+            run.bold = True
+            run.font.color.rgb = RGBColor(0x1E, 0x6F, 0xEB)
+            continue
+
+        # H3
+        if _re.match(r'^#{3,}\s+', stripped):
+            text = _re.sub(r'^#+\s*', '', stripped)
+            p = doc.add_heading(level=3)
+            p.clear()
+            run = p.add_run(text)
+            run.bold = True
+            continue
+
+        # Secciones numeradas sin #: "1. TITULO EN MAYÚSCULAS"
+        if _re.match(r'^\d{1,2}\.\s+[A-ZÁÉÍÓÚÜÑ\s]{4,}$', stripped):
+            p = doc.add_heading(level=2)
+            p.clear()
+            run = p.add_run(stripped)
+            run.bold = True
+            run.font.color.rgb = RGBColor(0x1A, 0x3A, 0x6B)
+            continue
+
+        # Bullet -/*/+
+        if _re.match(r'^[\-\*\+]\s+', stripped):
+            text = _re.sub(r'^[\-\*\+]\s+', '', stripped)
+            p = doc.add_paragraph(style='List Bullet')
+            add_styled_paragraph(p, text)
+            continue
+
+        # Bullet numerado
+        if _re.match(r'^\d+\.\s+', stripped) and not _re.match(r'^\d+\.\s+[A-ZÁÉÍÓÚ\s]{4,}$', stripped):
+            text = _re.sub(r'^\d+\.\s+', '', stripped)
+            p = doc.add_paragraph(style='List Number')
+            add_styled_paragraph(p, text)
+            continue
+
+        # Línea en blanco
+        if not stripped:
+            doc.add_paragraph()
+            continue
+
+        # Párrafo normal
+        p = doc.add_paragraph()
+        add_styled_paragraph(p, stripped)
+
+    buf = io.BytesIO()
+    doc.save(buf)
+    buf.seek(0)
+    safe_name = _re.sub(r'[^\w\-]', '_', requirement.title)[:60]
+    return Response(
+        content=buf.read(),
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="spec_{safe_name}.docx"'},
+    )
+
+
 @router.get("/{requirement_id}/history", response_model=list[VersionOut])
 def requirement_history(
     requirement_id: uuid.UUID,

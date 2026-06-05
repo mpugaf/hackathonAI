@@ -50,6 +50,11 @@ export async function exportRequirement(id) {
   return response.data;
 }
 
+export async function exportRequirementDocx(id) {
+  const response = await api.get(`/requirements/${id}/export-docx`, { responseType: 'blob' });
+  return response.data;
+}
+
 export async function getHistory(id) {
   const response = await api.get(`/requirements/${id}/history`);
   return response.data;
