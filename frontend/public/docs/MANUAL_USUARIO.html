@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual de Usuario | ReqFlow AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--navy:#0a1628;--blue:#1a3a6b;--teal:#00c9b1;--teal-lt:#e0faf7;--slate:#4a5568;--silver:#e8edf4;--white:#fff;--danger:#ef4444;--warn:#f59e0b;--ok:#10b981;--font-body:'IBM Plex Sans',sans-serif;--font-mono:'IBM Plex Mono',monospace}
+    *{box-sizing:border-box} body{margin:0;background:#f4f7fc;color:var(--navy);font-family:var(--font-body);line-height:1.55}
+    header{background:var(--navy);color:white;padding:56px 24px} main{max-width:1120px;margin:auto;padding:28px 20px 56px}
+    h1{font-size:40px;margin:0 0 12px} h2{margin:36px 0 14px;font-size:26px} h3{margin:24px 0 10px;font-size:19px}
+    .mono{font-family:var(--font-mono)} .tag{display:inline-block;background:var(--teal);color:var(--navy);border-radius:4px;padding:4px 8px;font:600 12px var(--font-mono)}
+    .card{background:white;border:1px solid var(--silver);border-radius:8px;padding:20px;margin:14px 0}.grid{display:grid;gap:16px}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .step{display:flex;gap:14px;align-items:flex-start}.num{background:var(--teal);color:var(--navy);border-radius:999px;width:32px;height:32px;display:grid;place-items:center;font-weight:700}
+    table{width:100%;border-collapse:collapse;background:white;border:1px solid var(--silver);border-radius:8px;overflow:hidden} th,td{border-bottom:1px solid var(--silver);padding:12px;text-align:left;vertical-align:top} th{background:var(--navy);color:white}
+    .flow{white-space:pre-line;background:#0d1b2e;color:#c8d8f0;border-radius:8px;padding:16px;font-family:var(--font-mono);font-size:14px}
+    svg{max-width:100%;height:auto;border:1px solid var(--silver);border-radius:8px;background:white}.note{background:var(--teal-lt);border-left:4px solid var(--teal);padding:14px;border-radius:6px}
+    @media(max-width:800px){.grid-2,.grid-3{grid-template-columns:1fr}h1{font-size:32px}}
+  </style>
+</head>
+<body>
+  <header>
+    <span class="tag">TCS AI Fridays 2026</span>
+    <h1>ReqFlow AI | Manual de Usuario</h1>
+    <p>Version 1.0 · 5 de junio de 2026 · Equipo Grupo 1</p>
+    <p>ReqFlow AI es una herramienta web para crear, generar, revisar y aprobar requisitos de software asistidos por IA. Integra flujo analista-revisor, feedback de LLM y exportacion HTML. Mantiene historial de versiones para trazabilidad de punta a punta.</p>
+  </header>
+  <main>
+    <section>
+      <h2>Guia de Inicio Rapido</h2>
+      <div class="grid grid-3">
+        <div class="card step"><span class="num">1</span><p>Abrir <span class="mono">http://localhost:3000</span>.</p></div>
+        <div class="card step"><span class="num">2</span><p>Ingresar con <span class="mono">analista@tcs.com / analista123</span>.</p></div>
+        <div class="card step"><span class="num">3</span><p>Crear un nuevo requisito desde el dashboard.</p></div>
+        <div class="card step"><span class="num">4</span><p>Hacer clic en <strong>Generar con IA</strong>.</p></div>
+        <div class="card step"><span class="num">5</span><p>Enviar a revision para ejecutar el revisor IA.</p></div>
+        <div class="card step"><span class="num">6</span><p>El revisor humano aprueba o devuelve con feedback.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Descripcion de Pantallas</h2>
+      <div class="grid grid-2">
+        <article class="card">
+          <h3>Login</h3>
+          <svg viewBox="0 0 520 280" role="img" aria-label="Mockup login"><rect width="260" height="280" fill="#0a1628"/><text x="28" y="46" fill="#fff" font-family="IBM Plex Mono" font-size="22">ReqFlow</text><text x="125" y="46" fill="#00c9b1" font-family="IBM Plex Mono" font-size="22">AI</text><text x="28" y="130" fill="#fff" font-size="28">Requisitos inteligentes</text><rect x="300" y="48" width="180" height="188" rx="8" fill="#fff" stroke="#e8edf4"/><rect x="322" y="104" width="136" height="28" rx="4" fill="#f4f7fc"/><rect x="322" y="144" width="136" height="28" rx="4" fill="#f4f7fc"/><rect x="322" y="188" width="136" height="32" rx="4" fill="#1a3a6b"/></svg>
+          <p>Formulario de acceso con email y password. Disponible para analista y revisor.</p>
+        </article>
+        <article class="card">
+          <h3>Dashboard</h3>
+          <svg viewBox="0 0 520 280" role="img" aria-label="Mockup dashboard"><rect width="110" height="280" fill="#0a1628"/><rect x="132" y="24" width="90" height="58" rx="8" fill="#fff" stroke="#e8edf4"/><rect x="238" y="24" width="90" height="58" rx="8" fill="#fff" stroke="#e8edf4"/><rect x="344" y="24" width="90" height="58" rx="8" fill="#fff" stroke="#e8edf4"/><rect x="132" y="112" width="190" height="92" rx="8" fill="#fff" stroke="#00c9b1"/><rect x="342" y="112" width="190" height="92" rx="8" fill="#fff" stroke="#f59e0b"/></svg>
+          <p>Muestra metricas, filtros y tarjetas de requisitos. El analista ve boton para crear.</p>
+        </article>
+        <article class="card">
+          <h3>Nuevo Requisito</h3>
+          <svg viewBox="0 0 520 280" role="img" aria-label="Mockup nuevo requisito"><rect x="32" y="28" width="456" height="224" rx="8" fill="#fff" stroke="#e8edf4"/><rect x="62" y="64" width="220" height="28" rx="4" fill="#f4f7fc"/><rect x="62" y="118" width="390" height="82" rx="4" fill="#f4f7fc"/><rect x="62" y="214" width="118" height="32" rx="4" fill="#1a3a6b"/></svg>
+          <p>Permite seleccionar proyecto, ingresar titulo y descripcion detallada.</p>
+        </article>
+        <article class="card">
+          <h3>Detalle de Requisito</h3>
+          <svg viewBox="0 0 520 280" role="img" aria-label="Mockup detalle"><rect x="24" y="24" width="180" height="232" rx="8" fill="#fff" stroke="#e8edf4"/><rect x="224" y="24" width="292" height="232" rx="8" fill="#0d1b2e"/><rect x="42" y="190" width="110" height="32" rx="4" fill="#1a3a6b"/><path d="M246 56h190M246 82h220M246 108h160" stroke="#c8d8f0" stroke-width="6" stroke-linecap="round"/></svg>
+          <p>Panel izquierdo con metadatos y acciones. Panel derecho con especificacion generada.</p>
+        </article>
+        <article class="card">
+          <h3>Pantalla de Revision</h3>
+          <svg viewBox="0 0 520 280" role="img" aria-label="Mockup revision"><rect x="20" y="24" width="130" height="232" rx="8" fill="#fff" stroke="#e8edf4"/><rect x="166" y="24" width="190" height="232" rx="8" fill="#0d1b2e"/><rect x="372" y="24" width="128" height="232" rx="8" fill="#fff" stroke="#e8edf4"/><circle cx="436" cy="76" r="24" fill="#e0faf7"/><rect x="392" y="200" width="82" height="28" rx="4" fill="#10b981"/></svg>
+          <p>El revisor compara requisito, especificacion y evaluacion IA antes de aprobar o rechazar.</p>
+        </article>
+        <article class="card">
+          <h3>Historial de Versiones</h3>
+          <svg viewBox="0 0 520 280" role="img" aria-label="Mockup historial"><line x1="72" y1="48" x2="72" y2="232" stroke="#e8edf4" stroke-width="4"/><circle cx="72" cy="64" r="22" fill="#00c9b1"/><circle cx="72" cy="148" r="22" fill="#00c9b1"/><rect x="114" y="36" width="360" height="70" rx="8" fill="#fff" stroke="#00c9b1"/><rect x="114" y="126" width="360" height="70" rx="8" fill="#fff" stroke="#e8edf4"/></svg>
+          <p>Timeline con versiones, modelo utilizado, previews, puntaje IA y decision humana.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Guia por Rol</h2>
+      <div class="grid grid-2">
+        <div class="card"><h3>Analista de Negocio</h3><div class="flow">Inicio de sesion
+↓
+Dashboard → Ver mis requisitos
+↓
+Nuevo Requisito → Ingresar titulo + descripcion
+↓
+Detalle → Generar con IA → Revisar spec → Enviar a Revision
+↓
+Esperar aprobacion
+↓
+Si rechazado: Re-generar con feedback
+Si aprobado: Exportar especificacion</div></div>
+        <div class="card"><h3>Revisor</h3><div class="flow">Inicio de sesion
+↓
+Dashboard → Ver requisitos En Revision
+↓
+Abrir Revision → Ver spec + feedback IA
+↓
+Agregar comentarios propios
+↓
+Aprobar → requisito aprobado
+o
+Rechazar → analista recibe feedback</div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>FAQ</h2>
+      <div class="card"><p><strong>¿Que pasa si la IA tarda mucho?</strong> Puede tomar hasta 30 segundos y el backend reintenta automaticamente.</p><p><strong>¿Puedo editar la spec generada?</strong> Si, mientras el requisito este en borrador.</p><p><strong>¿Que significa el puntaje del Revisor IA?</strong> Es una evaluacion 0-100; sobre 70 queda pre-aprobado.</p><p><strong>¿Se pierden versiones anteriores?</strong> No, el historial conserva las versiones.</p><p><strong>¿Puedo exportar antes de aprobacion?</strong> No, solo especificaciones aprobadas.</p><p><strong>¿Que modelos LLM usa?</strong> GPT-4o para generar y GPT-4o-mini para revisar.</p><p><strong>¿Como incorporo feedback?</strong> El sistema lo usa como contexto en la re-generacion.</p><p><strong>¿Puedo cambiar de rol?</strong> No, el rol lo asigna administracion.</p></div>
+    </section>
+
+    <section>
+      <h2>Errores Comunes y Soluciones</h2>
+      <table><thead><tr><th>Error</th><th>Causa</th><th>Solucion</th></tr></thead><tbody><tr><td>La IA no respondio</td><td>Timeout de 30 segundos</td><td>Esperar y reintentar</td></tr><tr><td>No se puede editar</td><td>Requisito no esta en borrador</td><td>Crear nueva version o revisar estado</td></tr><tr><td>Sesion expirada</td><td>JWT vencido tras 8 horas</td><td>Volver a iniciar sesion</td></tr><tr><td>Error 403</td><td>Rol sin permisos</td><td>Verificar rol asignado</td></tr></tbody></table>
+    </section>
+
+    <section>
+      <h2>Glosario Tecnico</h2>
+      <div class="grid grid-2"><div class="card"><strong>LLM</strong><p>Modelo de lenguaje grande usado para generar o revisar especificaciones.</p></div><div class="card"><strong>JWT</strong><p>Token firmado para autenticar sesiones.</p></div><div class="card"><strong>Especificacion Funcional</strong><p>Documento estructurado que describe comportamiento esperado.</p></div><div class="card"><strong>Historia de Usuario</strong><p>Formato Como-Quiero-Para que expresa valor de negocio.</p></div><div class="card"><strong>Criterios GWT</strong><p>Criterios Dado-Cuando-Entonces para aceptar funcionalidad.</p></div><div class="card"><strong>Audit Log</strong><p>Registro inmutable de acciones relevantes del sistema.</p></div></div>
+    </section>
+
+    <section>
+      <h2>Guia de Accesibilidad</h2>
+      <div class="note">Usa Tab para recorrer controles, Enter para activar botones, Escape para cerrar dialogos y flechas para navegar listas cuando el navegador lo permita. El layout soporta zoom del navegador, alto contraste del sistema operativo y lectura con NVDA o VoiceOver mediante etiquetas semanticas y botones con nombres accesibles.</div>
+    </section>
+  </main>
+</body>
+</html>
